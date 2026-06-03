@@ -1,0 +1,37 @@
+{
+  "name": "vue3-ts-pinia-demo",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview",
+    "format": "prettier --write \"src/**/*.{ts,vue,css,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,vue,css,json}\"",
+    "lint": "eslint \"src/**/*.{ts,vue}\"",
+    "lint:fix": "eslint --fix \"src/**/*.{ts,vue}\""
+  },
+  "dependencies": {
+    "@ant-design/icons-vue": "^7.0.0",
+    "ant-design-vue": "^4.2.0",
+    "pinia": "^2.1.7",
+    "vue": "^3.4.21",
+    "vue-i18n": "^9.13.0",
+    "vue-router": "^4.3.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@vitejs/plugin-vue": "^5.0.4",
+    "eslint": "^10.4.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-vue": "^10.9.1",
+    "globals": "^17.6.0",
+    "prettier": "^3.8.3",
+    "typescript": "^5.4.2",
+    "typescript-eslint": "^8.60.1",
+    "vite": "^5.1.6",
+    "vue-eslint-parser": "^10.4.0",
+    "vue-tsc": "^2.0.6"
+  }
+}

@@ -1,0 +1,145 @@
+/* ============================================================
+   全局样式 — main.css
+   知识点：
+   - CSS 自定义属性 (CSS Variables) 实现主题切换
+   - data-theme 属性切换深色/浅色主题
+   - CSS Reset 和基础排版
+   - 响应式媒体查询
+   ============================================================ */
+
+/* ---------- CSS Reset ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+  background: var(--color-bg, #f0f2f5);
+  color: var(--color-text, #333333);
+  transition:
+    background 0.3s ease,
+    color 0.3s ease;
+}
+
+/* ---------- 主题变量 (浅色) ---------- */
+:root {
+  --color-bg: #f0f2f5;
+  --color-card: #ffffff;
+  --color-text: #333333;
+  --color-text-secondary: #666666;
+  --color-primary: #1890ff;
+  --color-success: #52c41a;
+  --color-warning: #faad14;
+  --color-danger: #ff4d4f;
+  --color-border: #e8e8e8;
+}
+
+/* 深色主题 */
+[data-theme='dark'] {
+  --color-bg: #141414;
+  --color-card: #1f1f1f;
+  --color-text: #e0e0e0;
+  --color-text-secondary: #a0a0a0;
+  --color-primary: #177ddc;
+  --color-success: #49aa19;
+  --color-warning: #d89614;
+  --color-danger: #d32029;
+  --color-border: #303030;
+}
+
+/* ---------- 通用元素 ---------- */
+a {
+  color: var(--color-primary, #1890ff);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ---------- 滚动条美化 ---------- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border, #e8e8e8);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary, #999);
+}
+
+/* ---------- 选中文字颜色 ---------- */
+::selection {
+  background: var(--color-primary, #1890ff);
+  color: #fff;
+}
+
+/* ---------- 过渡动画 ---------- */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* ---------- 主题适配 Ant Design 深色模式 ---------- */
+[data-theme='dark'] .admin-sider.ant-layout-sider {
+  background: #1f1f1f;
+}
+
+[data-theme='dark'] .admin-header.ant-layout-header {
+  background: #1f1f1f;
+  border-color: #303030;
+}
+
+[data-theme='dark'] .admin-content.ant-layout-content {
+  background: #1f1f1f;
+}
+
+[data-theme='dark'] .admin-footer.ant-layout-footer {
+  background: #141414;
+}
+
+/* Ant Card 和 Table 在深色主题下 */
+[data-theme='dark'] .ant-card {
+  background: #1f1f1f;
+  border-color: #303030;
+}
+
+[data-theme='dark'] .ant-table {
+  background: #1f1f1f;
+}
+
+[data-theme='dark'] .ant-table-thead > tr > th {
+  background: #262626;
+  color: #e0e0e0;
+}
