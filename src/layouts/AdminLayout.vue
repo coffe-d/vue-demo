@@ -10,6 +10,7 @@ import { storeToRefs } from 'pinia'
 import { useThemeStore } from '@/stores/themeStore'
 import { useAuthStore } from '@/stores/authStore'
 import { protectedRoutes } from '@/router'
+import { useLocalStorage } from '@/composables/useLocalStorage'
 import { message } from 'ant-design-vue'
 import type { MenuProps } from 'ant-design-vue'
 import {
@@ -45,8 +46,9 @@ interface TabItem {
   path: string
   title: string
 }
-const tabs = ref<TabItem[]>([{ path: '/dashboard', title: t('menu.dashboard') }])
-const activeTab = ref('/dashboard')
+// 使用 useLocalStorage 持久化标签页 — 刷新后标签页不会丢失
+const tabs = useLocalStorage<TabItem[]>('app-tabs', [{ path: '/dashboard', title: t('menu.dashboard') }])
+const activeTab = useLocalStorage<string>('app-active-tab', '/dashboard')
 
 // 从路由获取标题
 function getTitle(p: string): string {

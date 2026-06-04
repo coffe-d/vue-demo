@@ -59,6 +59,9 @@ const filteredData = computed(() => {
 // 多选
 const selectedRowKeys = ref<number[]>([])
 
+// 分页 — 响应式 pageSize，配合 showSizeChanger 使用
+const pageSize = ref(5)
+
 // ============================================================
 // 弹窗控制状态（通过 Props 传给子组件）
 // ============================================================
@@ -196,9 +199,13 @@ async function handleBatchDelete() {
           onChange: (keys: any) => (selectedRowKeys = keys as number[]),
         }"
         :pagination="{
-          pageSize: 5,
+          pageSize: pageSize,
           showSizeChanger: true,
+          pageSizeOptions: ['5', '10', '20', '50'],
           showTotal: (total: number) => `共 ${total} 条`,
+          onShowSizeChange: (_current: number, size: number) => {
+            pageSize = size
+          },
         }"
         :loading="loading"
         rowKey="id"
