@@ -28,7 +28,17 @@ window.fetch = async function (input: RequestInfo | URL, init?: RequestInit): Pr
   }
 
   // 去掉 origin 部分，只保留路径
-  const pathname = url.replace(location.origin, '')
+  const fullUrl = url.replace(location.origin, '')
+  const [pathname, queryString] = fullUrl.split('?')
+
+  // 对于 GET 请求，将 query 参数合并到 body
+  if (!body && queryString) {
+    const params: Record<string, string> = {}
+    for (const [k, v] of new URLSearchParams(queryString)) {
+      params[k] = v
+    }
+    body = params
+  }
 
   const result = await handleRequest(pathname, init?.method || 'GET', body)
 

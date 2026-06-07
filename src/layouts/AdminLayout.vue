@@ -22,6 +22,7 @@ import {
   ThunderboltOutlined,
   DatabaseOutlined,
   ApiOutlined,
+  AppstoreOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   TranslationOutlined,
@@ -113,6 +114,7 @@ const iconMap: Record<string, unknown> = {
   ThunderboltOutlined,
   DatabaseOutlined,
   ApiOutlined,
+  AppstoreOutlined,
 }
 
 // --- 从 router 配置动态生成菜单项 ---

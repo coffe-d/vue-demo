@@ -4,10 +4,25 @@
 // 知识点：统一的 API 响应结构 { code, data, message }
 // ============================================================
 
-import { users, todos, tableRecords, dashboardData } from './data'
+import {
+  users,
+  todos,
+  tableRecords,
+  dashboardData,
+  products,
+  productCategories,
+  freightRecords,
+  PRODUCT_INITIAL_ID,
+  PRICE_LEVEL_INITIAL_ID,
+} from './data'
 import type { MockUser, TableRecord } from './data'
-import type { Todo } from '@/types'
+import type { Todo, ProductRecord, ProductCategory } from '@/types'
 import { TodoStatus } from '@/types'
+
+let todoNextId = 6
+let tableNextId = 9
+let productNextId = PRODUCT_INITIAL_ID
+let priceLevelNextId = PRICE_LEVEL_INITIAL_ID
 
 // 统一响应结构
 export interface ApiResult<T = unknown> {
@@ -15,9 +30,6 @@ export interface ApiResult<T = unknown> {
   data: T
   message: string
 }
-
-let todoNextId = 6
-let tableNextId = 9
 
 // 当前会话的 token→user 映射
 const sessions = new Map<string, MockUser>()
@@ -172,6 +184,183 @@ export async function handleRequest(
     return { code: 0, data: getMenuList(), message: 'ok' }
   }
 
+  // ==================== Categories ====================
+  if (url === '/api/categories' && method === 'GET') {
+    const tree = buildCategoryTree()
+    return { code: 0, data: tree, message: 'ok' }
+  }
+
+  if (url === '/api/categories' && method === 'POST') {
+    const input = body as Pick<ProductCategory, 'name' | 'parentId' | 'level' | 'sort'>
+    const cat: ProductCategory = {
+      id: Math.max(...productCategories.map((c) => c.id)) + 1,
+      ...input,
+      productCount: 0,
+    }
+    productCategories.push(cat)
+    return { code: 0, data: cat, message: '创建成功' }
+  }
+
+  if (url.match(/^\/api\/categories\/\d+$/) && method === 'PUT') {
+    const id = Number(url.split('/').pop())
+    const idx = productCategories.findIndex((c) => c.id === id)
+    if (idx !== -1) {
+      productCategories[idx] = { ...productCategories[idx], ...(body as Partial<ProductCategory>) }
+      return { code: 0, data: productCategories[idx], message: '更新成功' }
+    }
+    return { code: 404, data: null, message: '分类不存在' }
+  }
+
+  if (url.match(/^\/api\/categories\/\d+$/) && method === 'DELETE') {
+    const id = Number(url.split('/').pop())
+    const idx = productCategories.findIndex((c) => c.id === id)
+    if (idx !== -1) {
+      // 将子分类产品的 categoryId 移到父分类
+      const children = productCategories.filter((c) => c.parentId === id)
+      for (const child of children) {
+        for (const p of products) {
+          if (p.categoryId === child.id) {
+            p.categoryId = productCategories[idx].parentId ?? 1
+          }
+        }
+      }
+      // 删除分类及其子分类
+      const idsToRemove = new Set([id, ...children.map((c) => c.id)])
+      for (let i = productCategories.length - 1; i >= 0; i--) {
+        if (idsToRemove.has(productCategories[i].id)) {
+          productCategories.splice(i, 1)
+        }
+      }
+      return { code: 0, data: null, message: '删除成功' }
+    }
+    return { code: 404, data: null, message: '分类不存在' }
+  }
+
+  // ==================== Products ====================
+  if (url === '/api/products' && method === 'GET') {
+    const params = body as Record<string, unknown> | null
+    let filtered = [...products]
+
+    if (params?.categoryId) {
+      // 包含子分类产品
+      const catId = Number(params.categoryId)
+      const childIds = productCategories.filter((c) => c.parentId === catId).map((c) => c.id)
+      const allIds = [catId, ...childIds]
+      filtered = filtered.filter((p) => allIds.includes(p.categoryId))
+    }
+    if (params?.keyword) {
+      const kw = String(params.keyword).toLowerCase()
+      filtered = filtered.filter(
+        (p) => p.name.toLowerCase().includes(kw) || p.code.toLowerCase().includes(kw),
+      )
+    }
+    if (params?.status) {
+      filtered = filtered.filter((p) => p.status === params!.status)
+    }
+
+    filtered.sort((a, b) => a.sort - b.sort)
+
+    const page = Number(params?.page) || 1
+    const pageSize = Number(params?.pageSize) || 20
+    const total = filtered.length
+    const start = (page - 1) * pageSize
+    const list = filtered.slice(start, start + pageSize)
+
+    return { code: 0, data: { list, total, page, pageSize }, message: 'ok' }
+  }
+
+  if (url === '/api/products' && method === 'POST') {
+    const input = body as Partial<ProductRecord>
+    const now = new Date().toISOString().slice(0, 10)
+    const product: ProductRecord = {
+      id: productNextId++,
+      code: input.code || `CP-${Date.now()}`,
+      name: input.name || '',
+      categoryId: input.categoryId || 1,
+      spec: input.spec || '',
+      unit: input.unit || '',
+      lastPurchasePrice: input.lastPurchasePrice || 0,
+      freightAllocation: input.freightAllocation || 0,
+      purchasePriceWithFreight: (input.lastPurchasePrice || 0) + (input.freightAllocation || 0),
+      costPrice: input.costPrice || 0,
+      prices: input.prices || [],
+      stock: input.stock || 0,
+      status: input.status || 'active',
+      sort: products.length + 1,
+      remark: input.remark || '',
+      createdAt: now,
+      updatedAt: now,
+    }
+    products.push(product)
+    return { code: 0, data: product, message: '创建成功' }
+  }
+
+  if (url.match(/^\/api\/products\/\d+\/sort$/) && method === 'PUT') {
+    const id = Number(url.split('/')[3])
+    const { sort: newSort } = body as { sort: number }
+    const idx = products.findIndex((p) => p.id === id)
+    if (idx !== -1) {
+      products[idx].sort = newSort
+      products[idx].updatedAt = new Date().toISOString().slice(0, 10)
+      return { code: 0, data: products[idx], message: '排序更新成功' }
+    }
+    return { code: 404, data: null, message: '产品不存在' }
+  }
+
+  if (url.match(/^\/api\/products\/\d+\/category$/) && method === 'PUT') {
+    const id = Number(url.split('/')[3])
+    const { categoryId } = body as { categoryId: number }
+    const idx = products.findIndex((p) => p.id === id)
+    if (idx !== -1) {
+      products[idx].categoryId = categoryId
+      products[idx].updatedAt = new Date().toISOString().slice(0, 10)
+      return { code: 0, data: products[idx], message: '分类转移成功' }
+    }
+    return { code: 404, data: null, message: '产品不存在' }
+  }
+
+  if (url.match(/^\/api\/products\/\d+$/) && method === 'PUT') {
+    const id = Number(url.split('/').pop())
+    const idx = products.findIndex((p) => p.id === id)
+    if (idx !== -1) {
+      const updates = body as Partial<ProductRecord>
+      products[idx] = {
+        ...products[idx],
+        ...updates,
+        purchasePriceWithFreight:
+          (updates.lastPurchasePrice ?? products[idx].lastPurchasePrice) +
+          (updates.freightAllocation ?? products[idx].freightAllocation),
+        updatedAt: new Date().toISOString().slice(0, 10),
+      }
+      return { code: 0, data: products[idx], message: '更新成功' }
+    }
+    return { code: 404, data: null, message: '产品不存在' }
+  }
+
+  if (url.match(/^\/api\/products\/\d+$/) && method === 'DELETE') {
+    const id = Number(url.split('/').pop())
+    const idx = products.findIndex((p) => p.id === id)
+    if (idx !== -1) {
+      products.splice(idx, 1)
+      return { code: 0, data: null, message: '删除成功' }
+    }
+    return { code: 404, data: null, message: '产品不存在' }
+  }
+
+  if (url === '/api/products/batch-delete' && method === 'POST') {
+    const { ids } = body as { ids: number[] }
+    for (const id of ids) {
+      const idx = products.findIndex((p) => p.id === id)
+      if (idx !== -1) products.splice(idx, 1)
+    }
+    return { code: 0, data: null, message: '批量删除成功' }
+  }
+
+  // ==================== Freight Records ====================
+  if (url === '/api/freight-records' && method === 'GET') {
+    return { code: 0, data: freightRecords, message: 'ok' }
+  }
+
   return { code: 404, data: null, message: `未找到接口: ${method} ${url}` }
 }
 
@@ -210,5 +399,48 @@ function getMenuList() {
       name: 'ComposableDemo',
       meta: { title: 'menu.composables', icon: 'ApiOutlined' },
     },
+    {
+      path: '/product-manage',
+      name: 'ProductManage',
+      meta: { title: 'menu.productManage', icon: 'AppstoreOutlined' },
+    },
   ]
+}
+
+/** 将扁平的分类列表构建为树形结构 */
+function buildCategoryTree(): ProductCategory[] {
+  const map = new Map<number, ProductCategory>()
+  const roots: ProductCategory[] = []
+
+  // 更新 productCount
+  const counts: Record<number, number> = {}
+  for (const p of products) {
+    counts[p.categoryId] = (counts[p.categoryId] || 0) + 1
+  }
+  for (const c of productCategories) {
+    c.productCount = counts[c.id] || 0
+  }
+
+  for (const cat of productCategories) {
+    map.set(cat.id, { ...cat, children: [] })
+  }
+
+  for (const cat of map.values()) {
+    if (cat.parentId && map.has(cat.parentId)) {
+      map.get(cat.parentId)!.children!.push(cat)
+    } else if (!cat.parentId) {
+      roots.push(cat)
+    } else {
+      roots.push(cat) // 孤儿节点也展示
+    }
+  }
+
+  // 按 sort 排序
+  const sortFn = (a: ProductCategory, b: ProductCategory) => a.sort - b.sort
+  roots.sort(sortFn)
+  for (const [, cat] of map) {
+    if (cat.children) cat.children.sort(sortFn)
+  }
+
+  return roots
 }

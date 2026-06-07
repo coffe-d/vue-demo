@@ -66,6 +66,12 @@ export const protectedRoutes: RouteRecordRaw[] = [
     component: () => import('@/views/ComposableDemo.vue'),
     meta: { title: 'menu.composables', icon: 'ApiOutlined', order: 8 },
   },
+  {
+    path: 'product-manage',
+    name: 'ProductManage',
+    component: () => import('@/views/product-manage/index.vue'),
+    meta: { title: 'menu.productManage', icon: 'AppstoreOutlined', order: 9 },
+  },
 ]
 
 const router = createRouter({

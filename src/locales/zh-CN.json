@@ -7,7 +7,8 @@
     "timeline": "时间线",
     "shortcuts": "快捷键",
     "store": "状态管理",
-    "composables": "组合式函数"
+    "composables": "组合式函数",
+    "productManage": "基础信息"
   },
   "login": {
     "title": "登录系统",

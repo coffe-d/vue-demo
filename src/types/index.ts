@@ -144,3 +144,70 @@ export namespace ComponentProps {
     showChart?: boolean
   }
 }
+
+// ---------- 13. 产品管理相关类型 ----------
+
+/** 产品多级售价 */
+export interface ProductPriceLevel {
+  id: number
+  name: string // 如 "批发价1"、"批发价2"、"优惠价"
+  price: number
+}
+
+/** 产品档案记录 */
+export interface ProductRecord {
+  id: number
+  code: string // 产品编码
+  name: string // 产品名称
+  categoryId: number // 所属分类 ID
+  spec: string // 规格
+  unit: string // 单位
+  lastPurchasePrice: number // 最后进价
+  freightAllocation: number // 运费分摊
+  purchasePriceWithFreight: number // 含运费进价 (lastPurchasePrice + freightAllocation)
+  costPrice: number // 成本价
+  prices: ProductPriceLevel[] // 多级售价
+  stock: number // 当前库存
+  status: 'active' | 'inactive' // 状态
+  sort: number // 排序序号
+  remark: string // 备注
+  createdAt: string
+  updatedAt: string
+}
+
+/** 产品分类 (最多三级) */
+export interface ProductCategory {
+  id: number
+  name: string
+  parentId: number | null
+  level: number // 1 | 2 | 3
+  sort: number
+  productCount: number
+  children?: ProductCategory[]
+}
+
+/** 产品列表查询参数 */
+export interface ProductQueryParams {
+  categoryId?: number
+  keyword?: string
+  page?: number
+  pageSize?: number
+  status?: 'active' | 'inactive'
+}
+
+/** 产品分页列表结果 */
+export interface ProductListResult {
+  list: ProductRecord[]
+  total: number
+  page: number
+  pageSize: number
+}
+
+/** 运费单记录 */
+export interface FreightRecord {
+  id: number
+  billNo: string
+  totalAmount: number
+  productAllocations: { productId: number; amount: number }[]
+  createdAt: string
+}
