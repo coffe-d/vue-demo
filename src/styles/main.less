@@ -1,0 +1,137 @@
+// ============================================================
+// 全局样式 — main.less
+// 知识点：
+// - CSS 自定义属性 (CSS Variables) 实现主题切换
+// - data-theme 属性切换深色/浅色主题
+// - CSS Reset 和基础排版
+// - 响应式媒体查询
+// - Less 变量、嵌套、Mixin 优化写法
+// ============================================================
+
+@import './variables.less';
+
+// ---------- CSS Reset ----------
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: @font-family;
+  line-height: 1.6;
+  background: var(--color-bg, #f0f2f5);
+  color: var(--color-text, @text-color);
+  transition: background @transition-normal, color @transition-normal;
+}
+
+// ---------- 主题变量 (浅色 — 默认) ----------
+:root {
+  --color-bg: #f0f2f5;
+  --color-card: @white;
+  --color-text: @text-color;
+  --color-text-secondary: @text-secondary;
+  --color-primary: @primary;
+  --color-success: @success;
+  --color-warning: @warning;
+  --color-danger: @danger;
+  --color-border: @border-color;
+}
+
+// ---------- 深色主题 ----------
+[data-theme='dark'] {
+  --color-bg: @dark-bg;
+  --color-card: @dark-card;
+  --color-text: @dark-text;
+  --color-text-secondary: @dark-text-secondary;
+  --color-primary: @dark-primary;
+  --color-success: @dark-success;
+  --color-warning: @dark-warning;
+  --color-danger: @dark-danger;
+  --color-border: @dark-border;
+
+  // Ant Design 布局组件适配
+  .admin-sider.ant-layout-sider {
+    background: @dark-card;
+  }
+  .admin-header.ant-layout-header {
+    background: @dark-card;
+    border-color: @dark-border;
+  }
+  .admin-content.ant-layout-content,
+  .admin-footer.ant-layout-footer {
+    background: @dark-card;
+  }
+  .admin-footer.ant-layout-footer {
+    background: @dark-bg;
+  }
+
+  // Ant Design 卡片 & 表格适配
+  .ant-card {
+    background: @dark-card;
+    border-color: @dark-border;
+  }
+  .ant-table {
+    background: @dark-card;
+  }
+  .ant-table-thead > tr > th {
+    background: @dark-table-header-bg;
+    color: @dark-text;
+  }
+}
+
+// ---------- 通用元素 ----------
+a {
+  color: var(--color-primary, @primary);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+// ---------- 滚动条美化 ----------
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border, @border-color);
+  border-radius: @radius-sm;
+
+  &:hover {
+    background: var(--color-text-secondary, @text-secondary);
+  }
+}
+
+// ---------- 选中文字颜色 ----------
+::selection {
+  background: var(--color-primary, @primary);
+  color: #fff;
+}
+
+// ---------- Vue 过渡动画 ----------
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity @transition-normal;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}

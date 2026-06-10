@@ -166,5 +166,22 @@
     "debouncedValue": "Debounced Value",
     "inputPersist": "Type something, it persists after page refresh:",
     "savedValue": "Saved Value"
+  },
+  "ai": {
+    "title": "AI Assistant",
+    "placeholder": "Type a message, Enter to send, Shift+Enter for new line",
+    "thinking": "Thinking...",
+    "empty": "Hello! I'm your AI assistant, how can I help?",
+    "apiKey": "API Key",
+    "baseURL": "Base URL",
+    "model": "Model",
+    "saveConfig": "Save Config",
+    "configSaved": "AI config saved",
+    "clearConfirm": "Clear all messages?",
+    "regenerate": "Regenerate",
+    "clearChat": "Clear Chat",
+    "settings": "Settings",
+    "stopGenerate": "Stop",
+    "configHint": "Please configure AI API Key first (click settings icon)"
   }
 }

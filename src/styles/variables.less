@@ -1,0 +1,103 @@
+// ============================================================
+// 共享 Less 变量 & Mixins
+// 供 main.less、product.less 及其他组件引用
+// ============================================================
+
+// ---------- 品牌色 ----------
+@primary: #1890ff;
+@success: #52c41a;
+@warning: #faad14;
+@danger: #ff4d4f;
+
+// ---------- 产品管理专用色 ----------
+@pm-accent: #0d9488;
+@pm-accent-light: #e6f7f5;
+@pm-price: #b45309;
+@pm-price-bg: #fffbf5;
+@pm-text: #44403c;
+@pm-text-muted: #a8a29e;
+@pm-bg: #fafaf7;
+@pm-sidebar-bg: #f5f4f0;
+@pm-border: #e7e5e2;
+@pm-hover: #f0efe9;
+@pm-active: #e6f7f5;
+@pm-white: #ffffff;
+@pm-radius: 6px;
+@pm-transition: 0.18s ease;
+
+// ---------- 中性色 ----------
+@white: #ffffff;
+@border-color: #e8e8e8;
+@text-color: #333333;
+@text-secondary: #666666;
+
+// ---------- 深色主题色 ----------
+@dark-bg: #141414;
+@dark-card: #1f1f1f;
+@dark-text: #e0e0e0;
+@dark-text-secondary: #a0a0a0;
+@dark-primary: #177ddc;
+@dark-success: #49aa19;
+@dark-warning: #d89614;
+@dark-danger: #d32029;
+@dark-border: #303030;
+@dark-table-header-bg: #262626;
+
+// ---------- 字体 ----------
+@font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+  'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+// ---------- 过渡 ----------
+@transition-normal: 0.3s ease;
+@transition-fast: 0.18s ease;
+
+// ---------- 圆角 ----------
+@radius-sm: 3px;
+@radius-base: 4px;
+@radius-md: 6px;
+@radius-lg: 8px;
+@radius-xl: 10px;
+
+// ============================================================
+// Mixins
+// ============================================================
+
+// Flexbox 居中
+.flex-center() {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Flexbox 两端对齐
+.flex-between() {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+// 水平 flex 行
+.flex-row(@gap: 8px) {
+  display: flex;
+  align-items: center;
+  gap: @gap;
+}
+
+// 垂直 flex 列
+.flex-col(@gap: 4px) {
+  display: flex;
+  flex-direction: column;
+  gap: @gap;
+}
+
+// 文本省略号
+.text-ellipsis() {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// 等宽数字（适合价格、数量等数值列）
+.tabular-nums() {
+  font-variant-numeric: tabular-nums;
+}

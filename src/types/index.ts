@@ -195,6 +195,12 @@ export interface ProductQueryParams {
   status?: 'active' | 'inactive'
 }
 
+/** 分类接口返回 */
+export interface CategoriesResult {
+  tree: ProductCategory[]
+  totalProducts: number
+}
+
 /** 产品分页列表结果 */
 export interface ProductListResult {
   list: ProductRecord[]

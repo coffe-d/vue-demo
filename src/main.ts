@@ -13,7 +13,7 @@ import App from './App.vue'
 import router from './router'
 import zhCN from './locales/zh-CN.json'
 import enUS from './locales/en-US.json'
-import './styles/main.css'
+import './styles/main.less'
 
 // 1. 启动 Mock 服务（开发环境拦截 fetch 模拟后端 API）
 import './mock'

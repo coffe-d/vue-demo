@@ -1,24 +1,43 @@
 <!--
-  ProductPricePanel.vue — 产品价格详情面板
-  选中产品后展示：进价分解 | 多级售价 | 产品信息
+  ProductPricePanel.vue — 产品价格详情面板（展示型子组件）
+  ============================================================
+  架构角色：纯展示组件
+  - 接收选中的产品数据，以卡片形式展示价格相关信息
+  - 点击关闭按钮通知父组件取消选中
+
+  展示内容：
+  1. 进价信息卡 — 最后进价 → 运费分摊 → 含运费进价 → 毛利空间
+  2. 售价体系卡 — 多级售价列表（批发价1/零售价/...）
+  3. 产品信息卡 — 分类路径、规格、单位、库存、创建日期
+
+  Vue3 知识点：
+  - 条件渲染 v-show（选中产品时才渲染面板）
+  - Transition 过渡动画（面板滑入/滑出）
+  - 计算属性在父组件完成（categoryPath 通过 prop 传入）
 -->
 <script setup lang="ts">
 import { TagOutlined } from '@ant-design/icons-vue'
 import type { ProductRecord } from '@/types'
 
+// ===== Props =====
 defineProps<{
+  /** 当前选中的产品（展示用） */
   product: ProductRecord
+  /** 产品所属分类的完整路径（如 "建材 > 瓷砖 > 抛光砖"） */
   categoryPath: string
 }>()
 
+// ===== Emits =====
 const emit = defineEmits<{
+  /** 关闭面板 */
   close: []
 }>()
 </script>
 
 <template>
   <transition name="pm-panel-slide">
-    <div v-if="product" class="pm-price-panel" @click.stop>
+    <div v-show="product" class="pm-price-panel" @click.stop>
+      <!-- 面板头部：产品名称 + 编码 + 关闭按钮 -->
       <div class="pm-price-panel--head">
         <div class="pm-price-panel--title">
           <TagOutlined />
@@ -29,7 +48,7 @@ const emit = defineEmits<{
       </div>
 
       <div class="pm-price-panel--body">
-        <!-- 进价信息 -->
+        <!-- 卡片1：进价信息 + 毛利空间估算 -->
         <div class="pm-price-card">
           <div class="pm-price-card--title">进价信息</div>
           <div class="pm-price-card--rows">
@@ -39,11 +58,16 @@ const emit = defineEmits<{
             </div>
             <div class="pm-price-row">
               <span class="pm-price-row--label">运费分摊</span>
-              <span class="pm-price-row--value pm-freight">+ ¥{{ product.freightAllocation.toFixed(2) }}</span>
+              <span class="pm-price-row--value pm-freight">
+                + ¥{{ product.freightAllocation.toFixed(2) }}
+              </span>
             </div>
+            <!-- 含运费进价 = lastPurchasePrice + freightAllocation，高亮展示 -->
             <div class="pm-price-row pm-price-row--total">
               <span class="pm-price-row--label">含运费进价</span>
-              <span class="pm-price-row--value pm-highlight">¥{{ product.purchasePriceWithFreight.toFixed(2) }}</span>
+              <span class="pm-price-row--value pm-highlight">
+                ¥{{ product.purchasePriceWithFreight.toFixed(2) }}
+              </span>
             </div>
           </div>
           <div class="pm-price-card--hint">
@@ -55,7 +79,7 @@ const emit = defineEmits<{
           </div>
         </div>
 
-        <!-- 售价体系 -->
+        <!-- 卡片2：多级售价体系 -->
         <div class="pm-price-card">
           <div class="pm-price-card--title">售价体系</div>
           <div class="pm-price-card--rows">
@@ -69,7 +93,7 @@ const emit = defineEmits<{
           </div>
         </div>
 
-        <!-- 产品信息 -->
+        <!-- 卡片3：产品基本信息 -->
         <div class="pm-price-card pm-price-card--info">
           <div class="pm-price-card--title">产品信息</div>
           <div class="pm-price-card--rows">
@@ -103,10 +127,12 @@ const emit = defineEmits<{
 </template>
 
 <style scoped>
+/* ========== 面板容器 ========== */
 .pm-price-panel {
   background: #fff;
   border-top: 1px solid #e7e5e2;
 }
+
 .pm-price-panel--head {
   display: flex;
   align-items: center;
@@ -115,6 +141,7 @@ const emit = defineEmits<{
   border-bottom: 1px solid #e7e5e2;
   background: #fafaf7;
 }
+
 .pm-price-panel--title {
   display: flex;
   align-items: center;
@@ -123,19 +150,23 @@ const emit = defineEmits<{
   font-size: 14px;
   color: #44403c;
 }
+
 .pm-price-panel--code {
   font-size: 12px;
   color: #a8a29e;
   font-weight: 400;
+  /* 等宽字体使编码对齐更整齐 */
   font-family: 'SF Mono', 'JetBrains Mono', 'Consolas', monospace;
 }
+
 .pm-price-panel--body {
   display: flex;
   gap: 16px;
   padding: 16px;
-  overflow-x: auto;
+  overflow-x: auto; /* 小屏幕下横向滚动 */
 }
 
+/* ========== 信息卡片 ========== */
 .pm-price-card {
   flex: 1;
   min-width: 180px;
@@ -144,6 +175,8 @@ const emit = defineEmits<{
   padding: 14px 16px;
   border: 1px solid #e7e5e2;
 }
+
+/* 卡片标题：大写小字 + 宽松字间距 */
 .pm-price-card--title {
   font-size: 11px;
   font-weight: 600;
@@ -152,37 +185,62 @@ const emit = defineEmits<{
   color: #a8a29e;
   margin-bottom: 12px;
 }
+
 .pm-price-card--rows {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
+
+/* ========== 价格行 ========== */
 .pm-price-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 13px;
 }
-.pm-price-row--label { color: #a8a29e; }
+
+.pm-price-row--label {
+  color: #a8a29e;
+}
+
 .pm-price-row--value {
   font-weight: 500;
   color: #44403c;
+  /* 等宽数字：避免价格跳动 */
   font-variant-numeric: tabular-nums;
   font-family: 'SF Mono', 'JetBrains Mono', 'Consolas', monospace;
 }
+
+/* 含运费进价高亮（核心数据） */
 .pm-price-row--value.pm-highlight {
   color: #b45309;
   font-size: 15px;
   font-weight: 700;
 }
-.pm-price-row--value.pm-sell { color: #0d9488; font-weight: 600; }
-.pm-price-row--value.pm-freight { color: #a8a29e; }
+
+/* 售价用绿色突出 */
+.pm-price-row--value.pm-sell {
+  color: #0d9488;
+  font-weight: 600;
+}
+
+/* 运费用灰色弱化 */
+.pm-price-row--value.pm-freight {
+  color: #a8a29e;
+}
+
+/* 虚线分割（进价合计上方） */
 .pm-price-row--total {
   padding-top: 8px;
   margin-top: 4px;
   border-top: 1px dashed #e7e5e2;
 }
-.pm-price-row--empty { color: #a8a29e; }
+
+.pm-price-row--empty {
+  color: #a8a29e;
+}
+
 .pm-price-card--hint {
   margin-top: 10px;
   padding-top: 8px;
@@ -191,7 +249,7 @@ const emit = defineEmits<{
   color: #a8a29e;
 }
 
-/* 动画 */
+/* ========== 过渡动画 ========== */
 .pm-panel-slide-enter-active { transition: all 0.25s ease; }
 .pm-panel-slide-leave-active { transition: all 0.2s ease; }
 .pm-panel-slide-enter-from { max-height: 0; opacity: 0; transform: translateY(-8px); }

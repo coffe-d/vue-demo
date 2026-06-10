@@ -22,7 +22,7 @@ import { TodoStatus } from '@/types'
 let todoNextId = 6
 let tableNextId = 9
 let productNextId = PRODUCT_INITIAL_ID
-let priceLevelNextId = PRICE_LEVEL_INITIAL_ID
+const priceLevelNextId = PRICE_LEVEL_INITIAL_ID
 
 // 统一响应结构
 export interface ApiResult<T = unknown> {
@@ -186,8 +186,8 @@ export async function handleRequest(
 
   // ==================== Categories ====================
   if (url === '/api/categories' && method === 'GET') {
-    const tree = buildCategoryTree()
-    return { code: 0, data: tree, message: 'ok' }
+    const result = buildCategoriesResult()
+    return { code: 0, data: result, message: 'ok' }
   }
 
   if (url === '/api/categories' && method === 'POST') {
@@ -368,7 +368,7 @@ export async function handleRequest(
 
 function sanitizeUser(user: MockUser) {
   // 不返回 password
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   const { password: _pw, ...rest } = user
   return rest
 }
@@ -407,40 +407,53 @@ function getMenuList() {
   ]
 }
 
-/** 将扁平的分类列表构建为树形结构 */
-function buildCategoryTree(): ProductCategory[] {
+/** 构建分类结果：树 + 全量产品总数，递归计算每个分类的产品数（含子分类） */
+function buildCategoriesResult(): { tree: ProductCategory[]; totalProducts: number } {
   const map = new Map<number, ProductCategory>()
   const roots: ProductCategory[] = []
 
-  // 更新 productCount
-  const counts: Record<number, number> = {}
+  // 1. 直接产品计数（只统计直接挂在该分类下的产品）
+  const directCounts: Record<number, number> = {}
   for (const p of products) {
-    counts[p.categoryId] = (counts[p.categoryId] || 0) + 1
+    directCounts[p.categoryId] = (directCounts[p.categoryId] || 0) + 1
   }
-  for (const c of productCategories) {
-    c.productCount = counts[c.id] || 0
-  }
-
+  // 2. 克隆分类并写入直接计数
   for (const cat of productCategories) {
-    map.set(cat.id, { ...cat, children: [] })
+    map.set(cat.id, { ...cat, children: [], productCount: directCounts[cat.id] || 0 })
   }
 
+  // 3. 建立父子关系
   for (const cat of map.values()) {
     if (cat.parentId && map.has(cat.parentId)) {
       map.get(cat.parentId)!.children!.push(cat)
     } else if (!cat.parentId) {
       roots.push(cat)
     } else {
-      roots.push(cat) // 孤儿节点也展示
+      roots.push(cat)
     }
   }
 
-  // 按 sort 排序
+  // 4. 按 sort 排序
   const sortFn = (a: ProductCategory, b: ProductCategory) => a.sort - b.sort
   roots.sort(sortFn)
   for (const [, cat] of map) {
     if (cat.children) cat.children.sort(sortFn)
   }
 
-  return roots
+  // 5. 递归计算 productCount（自身 + 所有子孙直接计数之和）
+  function accumulateCount(cat: ProductCategory): number {
+    let total = cat.productCount // 已设置的直接计数
+    if (cat.children) {
+      for (const child of cat.children) {
+        total += accumulateCount(child)
+      }
+    }
+    cat.productCount = total
+    return total
+  }
+  for (const root of roots) {
+    accumulateCount(root)
+  }
+
+  return { tree: roots, totalProducts: products.length }
 }
