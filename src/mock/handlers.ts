@@ -242,10 +242,10 @@ export async function handleRequest(
     let filtered = [...products]
 
     if (params?.categoryId) {
-      // 包含子分类产品
+      // 包含子分类产品（递归获取所有子孙分类 ID）
       const catId = Number(params.categoryId)
-      const childIds = productCategories.filter((c) => c.parentId === catId).map((c) => c.id)
-      const allIds = [catId, ...childIds]
+      const descendantIds = getDescendantCategoryIds(catId)
+      const allIds = [catId, ...descendantIds]
       filtered = filtered.filter((p) => allIds.includes(p.categoryId))
     }
     if (params?.keyword) {
@@ -405,6 +405,20 @@ function getMenuList() {
       meta: { title: 'menu.productManage', icon: 'AppstoreOutlined' },
     },
   ]
+}
+
+/**
+ * 递归获取某个分类下的所有子孙分类 ID
+ * 用于产品列表过滤时，选中父分类也能展示其所有后代分类的产品
+ */
+function getDescendantCategoryIds(catId: number): number[] {
+  const result: number[] = []
+  const children = productCategories.filter((c) => c.parentId === catId)
+  for (const child of children) {
+    result.push(child.id)
+    result.push(...getDescendantCategoryIds(child.id))
+  }
+  return result
 }
 
 /** 构建分类结果：树 + 全量产品总数，递归计算每个分类的产品数（含子分类） */
