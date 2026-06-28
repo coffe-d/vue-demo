@@ -16,7 +16,10 @@ import enUS from './locales/en-US.json'
 import './styles/main.less'
 
 // 1. 启动 Mock 服务（开发环境拦截 fetch 模拟后端 API）
-import './mock'
+//    通过 .env.development 中的 VITE_USE_MOCK 控制是否启用 mock
+if (import.meta.env.VITE_USE_MOCK === 'true') {
+  import('./mock')
+}
 
 // 2. 创建 Vue 应用
 const app = createApp(App)
@@ -53,5 +56,9 @@ app.use(Antd)
 app.mount('#app')
 
 console.log('🚀 Vue3 后台管理系统已启动！')
-console.log('📡 Mock API 已就绪，拦截 /api/* 请求')
-console.log('🔑 可用账号: admin/123456, editor/123456, guest/123456')
+if (import.meta.env.VITE_USE_MOCK === 'true') {
+  console.log('📡 Mock API 已就绪，拦截 /api/* 请求')
+  console.log('🔑 可用账号: admin/123456, editor/123456, guest/123456')
+} else {
+  console.log('🌐 已连接到真实后端 API: http://localhost:9091')
+}
