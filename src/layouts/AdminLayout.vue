@@ -1,6 +1,6 @@
 <!--
   AdminLayout.vue — 后台管理通用布局
-  菜单由 router 配置动态生成（单一数据源），不再硬编码
+  菜单由 router 配置动态生成（单一数据源），支持嵌套子菜单
 -->
 <script setup lang="ts">
 import { ref, computed, h, watch } from 'vue'
@@ -13,23 +13,21 @@ import { protectedRoutes } from '@/router'
 import { useLocalStorage } from '@/composables/useLocalStorage'
 import { message } from 'ant-design-vue'
 import type { MenuProps } from 'ant-design-vue'
+import type { RouteRecordRaw } from 'vue-router'
 import {
-  DashboardOutlined,
-  CheckSquareOutlined,
-  FormOutlined,
-  TableOutlined,
-  ClockCircleOutlined,
-  ThunderboltOutlined,
-  DatabaseOutlined,
-  ApiOutlined,
-  AppstoreOutlined,
+  HomeOutlined,
+  SettingOutlined,
+  MenuOutlined,
+  BookOutlined,
+  UserOutlined,
+  TeamOutlined,
+  FileTextOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   TranslationOutlined,
   BulbOutlined,
   BulbFilled,
   LogoutOutlined,
-  UserOutlined,
 } from '@ant-design/icons-vue'
 
 const router = useRouter()
@@ -43,21 +41,33 @@ const { userName } = storeToRefs(authStore)
 const collapsed = ref(false)
 
 // ===== 标签页管理 =====
-interface TabItem {
-  path: string
-  title: string
-}
-// 使用 useLocalStorage 持久化标签页 — 刷新后标签页不会丢失
+interface TabItem { path: string; title: string }
 const tabs = useLocalStorage<TabItem[]>('app-tabs', [{ path: '/dashboard', title: t('menu.dashboard') }])
 const activeTab = useLocalStorage<string>('app-active-tab', '/dashboard')
 
-// 从路由获取标题
-function getTitle(p: string): string {
-  const route = protectedRoutes.find((r) => `/${r.path}` === p)
-  return route ? t(route.meta?.title ?? '') : p
+// 从所有路由（含嵌套）中递归查找标题
+function findRouteTitle(path: string): string {
+  function search(routes: readonly RouteRecordRaw[], basePath = ''): string | null {
+    for (const r of routes) {
+      const fullPath = basePath + '/' + r.path
+      if (fullPath === path || (r.redirect && fullPath === path)) {
+        return r.meta?.title ?? null
+      }
+      if (r.children) {
+        const found = search(r.children, fullPath)
+        if (found) return found
+      }
+    }
+    return null
+  }
+  const titleKey = search(protectedRoutes, '')
+  return titleKey ? t(titleKey) : path
 }
 
-// 打开标签页（或激活已有）
+function getTitle(p: string): string {
+  return findRouteTitle(p)
+}
+
 function openTab(path: string) {
   const exist = tabs.value.find((t) => t.path === path)
   if (!exist) {
@@ -67,7 +77,6 @@ function openTab(path: string) {
   router.push(path)
 }
 
-// Ant Tabs 编辑事件 — remove 时关闭标签
 function handleTabEdit(targetKey: string | MouseEvent) {
   const path = targetKey as string
   if (path === '/dashboard') return
@@ -76,24 +85,13 @@ function handleTabEdit(targetKey: string | MouseEvent) {
   tabs.value.splice(idx, 1)
   if (activeTab.value === path) {
     const next = tabs.value[Math.min(idx, tabs.value.length - 1)]
-    if (next) {
-      activeTab.value = next.path
-      router.push(next.path)
-    }
+    if (next) { activeTab.value = next.path; router.push(next.path) }
   }
 }
 
-// Ant Tabs change 事件 — 切换标签时导航
-function handleTabChange(key: string) {
-  router.push(key)
-}
+function handleTabChange(key: string) { router.push(key) }
+function handleMenuClick({ key }: { key: string }) { openTab(key) }
 
-// 菜单点击 → 打开标签
-function handleMenuClick({ key }: { key: string }) {
-  openTab(key)
-}
-
-// 路由变化时同步标签激活态
 watch(
   () => route.path,
   (p) => {
@@ -104,39 +102,76 @@ watch(
   },
 )
 
-// 图标名称 → 组件映射表
+// ===== 图标映射表 =====
 const iconMap: Record<string, unknown> = {
-  DashboardOutlined,
-  CheckSquareOutlined,
-  FormOutlined,
-  TableOutlined,
-  ClockCircleOutlined,
-  ThunderboltOutlined,
-  DatabaseOutlined,
-  ApiOutlined,
-  AppstoreOutlined,
+  HomeOutlined, SettingOutlined, MenuOutlined, BookOutlined,
+  UserOutlined, TeamOutlined, FileTextOutlined,
 }
 
-// --- 从 router 配置动态生成菜单项 ---
-// 单一数据源：新增页面只需在 router/index.ts 的 protectedRoutes 中添加即可
-const menuItems = computed<MenuProps['items']>(() => {
-  // 取父路由 '/' 的 children（即 protectedRoutes）
-  // 过滤掉 hidden 的路由，按 order 排序
-  return protectedRoutes
+// ===== 递归构建菜单项 =====
+function buildMenuItems(routes: readonly RouteRecordRaw[], parentPath = ''): MenuProps['items'] {
+  const items: MenuProps['items'] = []
+  const visibleRoutes = routes
     .filter((r) => !r.meta?.hidden)
     .sort((a, b) => (a.meta?.order ?? 99) - (b.meta?.order ?? 99))
-    .map((r) => ({
-      // key 使用完整路径
-      key: `/${r.path}`,
-      icon: r.meta?.icon ? h(iconMap[r.meta.icon] as any) : undefined,
-      label: t(r.meta?.title ?? ''),
-    }))
+
+  for (const r of visibleRoutes) {
+    const fullPath = parentPath + '/' + r.path
+    const icon = r.meta?.icon ? h(iconMap[r.meta.icon] as any) : undefined
+    const label = t(r.meta?.title ?? '')
+
+    if (r.children && r.children.length > 0) {
+      // 有子路由 → 渲染 SubMenu
+      const children = buildMenuItems(r.children, fullPath)
+      if (children && children.length > 0) {
+        items.push({
+          key: fullPath,
+          icon,
+          label,
+          children,
+        })
+      }
+    } else {
+      // 叶子路由 → 渲染 MenuItem
+      items.push({
+        key: fullPath.replace(/\/+/g, '/'), // 去重斜杠
+        icon,
+        label,
+      })
+    }
+  }
+  return items
+}
+
+const menuItems = computed<MenuProps['items']>(() => buildMenuItems(protectedRoutes))
+
+// 当前选中的菜单 key
+const selectedKeys = computed(() => {
+  // 需要精确匹配当前路径
+  const path = route.path
+  // 递归查找匹配的叶子菜单 key
+  function findKeys(items: any[]): string | null {
+    for (const item of items || []) {
+      if (item.key === path) return item.key
+      if (item.children) {
+        const found = findKeys(item.children)
+        if (found) return found
+      }
+    }
+    return null
+  }
+  const key = findKeys(menuItems.value || [])
+  return key ? [key] : ['/dashboard']
 })
 
-// 当前选中菜单
-const selectedKeys = computed(() => {
-  const matched = menuItems.value?.find((item) => item?.key === route.path)
-  return matched ? [matched.key as string] : ['/dashboard']
+// 自动展开的父菜单
+const openKeys = computed(() => {
+  const pathParts = route.path.split('/').filter(Boolean)
+  // 如 /system/menu → 应展开 /system
+  if (pathParts.length >= 2) {
+    return ['/' + pathParts[0]]
+  }
+  return []
 })
 
 function toggleLang() {
@@ -144,9 +179,7 @@ function toggleLang() {
   message.info(locale.value === 'zh-CN' ? '已切换为中文' : 'Switched to English')
 }
 
-function toggleTheme() {
-  themeStore.toggle()
-}
+function toggleTheme() { themeStore.toggle() }
 
 async function handleLogout() {
   await authStore.logout()
@@ -170,6 +203,7 @@ async function handleLogout() {
       </div>
       <a-menu
         :selectedKeys="selectedKeys"
+        :openKeys="openKeys"
         :items="menuItems"
         mode="inline"
         :theme="isDark ? 'dark' : 'light'"
@@ -220,7 +254,7 @@ async function handleLogout() {
         </div>
       </a-layout-header>
 
-      <!-- 标签页栏 — Ant Tabs 组件 -->
+      <!-- 标签页栏 -->
       <a-tabs
         v-if="tabs.length > 0"
         v-model:activeKey="activeTab"
@@ -244,21 +278,15 @@ async function handleLogout() {
       </a-layout-content>
 
       <a-layout-footer class="admin-footer">
-        Vue3 + TypeScript + Pinia + Ant Design Vue — 前端知识复习 Demo
+        Vue3 + TypeScript + Pinia + Ant Design Vue — 后台管理系统脚手架
       </a-layout-footer>
     </a-layout>
   </a-layout>
 </template>
 
 <style scoped>
-.admin-layout {
-  min-height: 100vh;
-}
-
-.admin-sider {
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.06);
-  z-index: 10;
-}
+.admin-layout { min-height: 100vh; }
+.admin-sider { box-shadow: 2px 0 8px rgba(0, 0, 0, 0.06); z-index: 10; }
 
 .logo {
   height: 64px;
@@ -269,18 +297,8 @@ async function handleLogout() {
   overflow: hidden;
   white-space: nowrap;
 }
-
-.logo-text {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--color-primary, #1890ff);
-}
-
-.logo-text-collapsed {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--color-primary, #1890ff);
-}
+.logo-text { font-size: 18px; font-weight: 700; color: var(--color-primary, #1890ff); }
+.logo-text-collapsed { font-size: 20px; font-weight: 700; color: var(--color-primary, #1890ff); }
 
 .admin-header {
   display: flex;
@@ -293,30 +311,12 @@ async function handleLogout() {
   height: 64px;
   line-height: 64px;
 }
+.header-left, .header-right { display: flex; align-items: center; gap: 4px; }
+.collapse-btn { font-size: 18px; }
+.header-btn { font-size: 14px; }
 
-.header-left,
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.collapse-btn {
-  font-size: 18px;
-}
-.header-btn {
-  font-size: 14px;
-}
-
-/* ============ 标签页栏 ============ */
-.tab-bar {
-  margin: 0 24px;
-  padding-top: 8px;
-}
-
-.tab-bar :deep(.ant-tabs-nav) {
-  margin-bottom: 0;
-}
+.tab-bar { margin: 0 24px; padding-top: 8px; }
+.tab-bar :deep(.ant-tabs-nav) { margin-bottom: 0; }
 
 .admin-content {
   margin: 24px;
@@ -327,20 +327,10 @@ async function handleLogout() {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
-.admin-footer {
-  text-align: center;
-  font-size: 12px;
-  color: var(--color-text-secondary, #999);
-  padding: 16px;
-}
+.admin-footer { text-align: center; font-size: 12px; color: var(--color-text-secondary, #999); padding: 16px; }
 
 @media (max-width: 768px) {
-  .admin-content {
-    margin: 12px;
-    padding: 12px;
-  }
-  .admin-header {
-    padding: 0 12px;
-  }
+  .admin-content { margin: 12px; padding: 12px; }
+  .admin-header { padding: 0 12px; }
 }
 </style>

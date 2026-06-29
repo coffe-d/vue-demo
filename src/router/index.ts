@@ -1,6 +1,6 @@
 // ============================================================
 // Vue Router 配置 —— 路由即菜单的唯一配置源
-// 知识点：嵌套路由、路由懒加载、meta 元信息、导航守卫
+// 支持嵌套子菜单：children 属性可定义子级菜单
 // 新增页面只需在此添加路由即可，菜单自动生成
 // ============================================================
 
@@ -9,11 +9,11 @@ import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 // 扩展 RouteMeta — 声明自定义 meta 字段的类型
 declare module 'vue-router' {
   interface RouteMeta {
-    title: string // i18n key，用于菜单标题和页面标题
-    icon?: string // 图标组件名（与 iconMap 中的 key 对应）
-    noAuth?: boolean // 是否不需要登录
-    hidden?: boolean // 是否在菜单中隐藏（如详情页、嵌套子页）
-    order?: number // 菜单排序权重（越小越靠前）
+    title: string                           // i18n key，用于菜单标题和页面标题
+    icon?: string                           // 图标组件名（与 iconMap 中的 key 对应）
+    noAuth?: boolean                        // 是否不需要登录
+    hidden?: boolean                        // 是否在菜单中隐藏
+    order?: number                          // 菜单排序权重（越小越靠前）
   }
 }
 
@@ -22,55 +22,45 @@ export const protectedRoutes: RouteRecordRaw[] = [
     path: 'dashboard',
     name: 'Dashboard',
     component: () => import('@/views/Dashboard.vue'),
-    meta: { title: 'menu.dashboard', icon: 'DashboardOutlined', order: 1 },
+    meta: { title: 'menu.dashboard', icon: 'HomeOutlined', order: 1 },
   },
   {
-    path: 'todo',
-    name: 'TodoDemo',
-    component: () => import('@/views/TodoDemo.vue'),
-    meta: { title: 'menu.todo', icon: 'CheckSquareOutlined', order: 2 },
-  },
-  {
-    path: 'form',
-    name: 'ComplexForm',
-    component: () => import('@/views/ComplexForm.vue'),
-    meta: { title: 'menu.form', icon: 'FormOutlined', order: 3 },
-  },
-  {
-    path: 'table',
-    name: 'DataTable',
-    component: () => import('@/views/DataTable.vue'),
-    meta: { title: 'menu.table', icon: 'TableOutlined', order: 4 },
-  },
-  {
-    path: 'timeline',
-    name: 'Timeline',
-    component: () => import('@/views/Timeline.vue'),
-    meta: { title: 'menu.timeline', icon: 'ClockCircleOutlined', order: 5 },
-  },
-  {
-    path: 'shortcuts',
-    name: 'Shortcuts',
-    component: () => import('@/views/Shortcuts.vue'),
-    meta: { title: 'menu.shortcuts', icon: 'ThunderboltOutlined', order: 6 },
-  },
-  {
-    path: 'store-demo',
-    name: 'StoreDemo',
-    component: () => import('@/views/StoreDemo.vue'),
-    meta: { title: 'menu.store', icon: 'DatabaseOutlined', order: 7 },
-  },
-  {
-    path: 'composables',
-    name: 'ComposableDemo',
-    component: () => import('@/views/ComposableDemo.vue'),
-    meta: { title: 'menu.composables', icon: 'ApiOutlined', order: 8 },
-  },
-  {
-    path: 'product-manage',
-    name: 'ProductManage',
-    component: () => import('@/views/product-manage/index.vue'),
-    meta: { title: 'menu.productManage', icon: 'AppstoreOutlined', order: 9 },
+    path: 'system',
+    name: 'System',
+    redirect: '/system/menu',
+    meta: { title: 'menu.system', icon: 'SettingOutlined', order: 2 },
+    children: [
+      {
+        path: 'menu',
+        name: 'MenuManage',
+        component: () => import('@/views/system/MenuManage.vue'),
+        meta: { title: 'menu.menuManage', icon: 'MenuOutlined', order: 1 },
+      },
+      {
+        path: 'dict',
+        name: 'DictManage',
+        component: () => import('@/views/system/DictManage.vue'),
+        meta: { title: 'menu.dictManage', icon: 'BookOutlined', order: 2 },
+      },
+      {
+        path: 'user',
+        name: 'UserManage',
+        component: () => import('@/views/system/UserManage.vue'),
+        meta: { title: 'menu.userManage', icon: 'UserOutlined', order: 3 },
+      },
+      {
+        path: 'role',
+        name: 'RoleManage',
+        component: () => import('@/views/system/RoleManage.vue'),
+        meta: { title: 'menu.roleManage', icon: 'TeamOutlined', order: 4 },
+      },
+      {
+        path: 'log',
+        name: 'LogManage',
+        component: () => import('@/views/system/LogManage.vue'),
+        meta: { title: 'menu.logManage', icon: 'FileTextOutlined', order: 5 },
+      },
+    ],
   },
 ]
 

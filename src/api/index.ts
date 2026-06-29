@@ -3,7 +3,7 @@
 // 知识点：统一的请求封装、类型安全的响应、错误处理
 // ============================================================
 
-import type { ApiResult } from '@/mock/handlers'
+import type { ApiResult } from '@/types'
 import { message } from 'ant-design-vue'
 
 // 基础请求 URL（可为空，mock 拦截 /api/ 开头的请求）
