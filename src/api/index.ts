@@ -48,6 +48,18 @@ export async function request<T = unknown>(
 
     const result: ApiResult<T> = await res.json()
 
+    // Token 过期或无效 → 清除登录状态并跳转登录页
+    if (result.code === 401) {
+      setToken(null)
+      localStorage.removeItem('demo_user')
+      localStorage.removeItem('app-tabs')
+      // 避免在登录页本身触发 401 时死循环
+      if (!window.location.pathname.includes('/login')) {
+        window.location.replace('/login')
+      }
+      return result
+    }
+
     // 统一错误提示（排除静默处理的场景）
     if (result.code !== 0 && !(options as any).__silent) {
       message.error(result.message || '请求失败')
