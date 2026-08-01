@@ -1,107 +1,8 @@
 // ============================================================
-// TypeScript 知识点演示 — 类型定义文件
-// 涵盖：interface / type / enum / generics / utility types / discriminated union
+// TypeScript 类型定义 — 系统管理脚手架通用类型
 // ============================================================
 
-// ---------- 1. 枚举 (Enum) ----------
-// 字符串枚举 — 有实际字符串值的枚举，便于调试和序列化
-export enum Priority {
-  LOW = 'low',
-  MEDIUM = 'medium',
-  HIGH = 'high',
-}
-
-// 数字枚举 — 值从 0 开始自动递增
-export enum TodoStatus {
-  TODO = 0, // 待办
-  IN_PROGRESS = 1, // 进行中
-  DONE = 2, // 已完成
-}
-
-// ---------- 2. interface — 定义对象结构 ----------
-// 可扩展、可被类实现。适合描述"实体"
-export interface Todo {
-  id: number
-  title: string
-  description?: string // 可选属性
-  priority: Priority
-  status: TodoStatus
-  createdAt: Date
-  updatedAt: Date
-  tags: string[]
-}
-
-// ---------- 3. type — 类型别名 ----------
-// 更灵活，支持联合类型、交叉类型、映射类型
-// 下面演示一个 可辨识联合 (Discriminated Union)
-export type TodoFilter =
-  | { type: 'all' } // 显示全部
-  | { type: 'byStatus'; status: TodoStatus } // 按状态筛选
-  | { type: 'byPriority'; priority: Priority } // 按优先级筛选
-  | { type: 'byKeyword'; keyword: string } // 按关键字搜索
-
-// ---------- 4. 泛型接口 (Generic Interface) ----------
-// 可复用的通用结构
-export interface ApiResponse<T> {
-  code: number
-  message: string
-  data: T
-}
-
-export interface PaginatedList<T> {
-  items: T[]
-  total: number
-  page: number
-  pageSize: number
-}
-
-// ---------- 5. Utility Types 演示 ----------
-// Partial<T> — 所有属性变为可选（常用于更新操作）
-export type TodoUpdate = Partial<
-  Pick<Todo, 'title' | 'description' | 'priority' | 'status' | 'tags'>
->
-
-// Pick<T, K> — 从 T 中选取指定属性
-export type TodoSummary = Pick<Todo, 'id' | 'title' | 'status'>
-
-// Omit<T, K> — 从 T 中排除指定属性
-export type CreateTodoInput = Omit<Todo, 'id' | 'createdAt' | 'updatedAt'>
-
-// Readonly<T> — 所有属性变为只读
-export type ReadonlyTodo = Readonly<Todo>
-
-// Record<K, V> — 构造 key 为 K、value 为 V 的对象类型
-export type TodoStatsMap = Record<Priority, number>
-
-// ---------- 6. 交叉类型 (Intersection Type) ----------
-// 合并多个类型
-export type TodoWithMeta = Todo & {
-  isOverdue: boolean
-  daysSinceCreation: number
-}
-
-// ---------- 7. 函数类型 & 泛型约束 ----------
-// 泛型函数 — 接受任意类型数组，返回相同类型
-export function getFirst<T>(arr: T[]): T | undefined {
-  return arr[0]
-}
-
-// 泛型约束 — T 必须包含 id 属性
-export function findById<T extends { id: number }>(list: T[], id: number): T | undefined {
-  return list.find((item) => item.id === id)
-}
-
-// ---------- 8. 条件类型 (Conditional Type) ----------
-// 根据条件返回不同类型
-export type IsString<T> = T extends string ? 'yes' : 'no'
-
-// ---------- 9. 映射类型 + keyof ----------
-// 将 Todo 的所有属性变为 boolean 标记
-export type TodoFlags = {
-  [K in keyof Todo]: boolean
-}
-
-// ---------- 10. 用户相关类型 ----------
+// ---------- 用户相关 ----------
 export interface User {
   id: number
   username: string
@@ -123,97 +24,125 @@ export interface UserPreferences {
   showCompleted: boolean
 }
 
-// ---------- 11. 主题相关 ----------
+// ---------- 主题相关 ----------
 export type Theme = 'light' | 'dark'
 
-// ---------- 12. 组件 Props 类型示例 ----------
-// 使用命名空间组织关联类型
-export namespace ComponentProps {
-  export interface TodoItem {
-    todo: Todo
-    index: number
-    showIndex?: boolean
-  }
-
-  export interface TodoForm {
-    loading?: boolean
-  }
-
-  export interface StatsPanel {
-    title: string
-    showChart?: boolean
-  }
+// ---------- 通用 API 响应 ----------
+export interface ApiResult<T = unknown> {
+  code: number
+  data: T
+  message: string
 }
 
-// ---------- 13. 产品管理相关类型 ----------
-
-/** 产品多级售价 */
-export interface ProductPriceLevel {
-  id: number
-  name: string // 如 "批发价1"、"批发价2"、"优惠价"
-  price: number
+export interface ApiResponse<T> {
+  code: number
+  message: string
+  data: T
 }
 
-/** 产品档案记录 */
-export interface ProductRecord {
-  id: number
-  code: string // 产品编码
-  name: string // 产品名称
-  categoryId: number // 所属分类 ID
-  spec: string // 规格
-  unit: string // 单位
-  lastPurchasePrice: number // 最后进价
-  freightAllocation: number // 运费分摊
-  purchasePriceWithFreight: number // 含运费进价 (lastPurchasePrice + freightAllocation)
-  costPrice: number // 成本价
-  prices: ProductPriceLevel[] // 多级售价
-  stock: number // 当前库存
-  status: 'active' | 'inactive' // 状态
-  sort: number // 排序序号
-  remark: string // 备注
-  createdAt: string
-  updatedAt: string
-}
-
-/** 产品分类 (最多三级) */
-export interface ProductCategory {
-  id: number
-  name: string
-  parentId: number | null
-  level: number // 1 | 2 | 3
-  sort: number
-  productCount: number
-  children?: ProductCategory[]
-}
-
-/** 产品列表查询参数 */
-export interface ProductQueryParams {
-  categoryId?: number
-  keyword?: string
-  page?: number
-  pageSize?: number
-  status?: 'active' | 'inactive'
-}
-
-/** 分类接口返回 */
-export interface CategoriesResult {
-  tree: ProductCategory[]
-  totalProducts: number
-}
-
-/** 产品分页列表结果 */
-export interface ProductListResult {
-  list: ProductRecord[]
+export interface PaginatedList<T> {
+  items: T[]
   total: number
   page: number
   pageSize: number
 }
 
-/** 运费单记录 */
-export interface FreightRecord {
+// ==================== 系统管理相关类型 ====================
+
+// ---------- 系统菜单 ----------
+export interface SysMenu {
   id: number
-  billNo: string
-  totalAmount: number
-  productAllocations: { productId: number; amount: number }[]
+  parentId: number | null
+  name: string                    // 菜单名称
+  path: string                    // 路由路径
+  component: string               // 组件路径
+  icon: string                    // 图标名称
+  type: 'menu' | 'button'        // 菜单 or 按钮
+  permission: string              // 权限标识
+  sort: number                    // 排序
+  status: 'enabled' | 'disabled'
+  children?: SysMenu[]
   createdAt: string
+  updatedAt: string
+}
+
+// ---------- 系统字典 ----------
+export interface SysDictType {
+  id: number
+  dictName: string                // 字典名称
+  dictCode: string                // 字典编码（唯一标识）
+  status: 'enabled' | 'disabled'
+  remark: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface SysDictItem {
+  id: number
+  dictCode: string                // 所属字典编码
+  label: string                   // 字典项标签
+  value: string                   // 字典项值
+  sort: number
+  status: 'enabled' | 'disabled'
+  remark: string
+  createdAt: string
+  updatedAt: string
+}
+
+// ---------- 系统用户 ----------
+export interface SysUser {
+  id: number
+  username: string
+  nickname: string
+  email: string
+  phone: string
+  avatar: string
+  roleId: number
+  roleName: string
+  status: 'enabled' | 'disabled'
+  lastLoginTime: string
+  createdAt: string
+  updatedAt: string
+}
+
+// ---------- 系统角色 ----------
+export interface SysRole {
+  id: number
+  roleName: string                // 角色名称
+  roleCode: string                // 角色编码
+  description: string
+  status: 'enabled' | 'disabled'
+  menuIds: number[]               // 拥有的菜单权限 ID 列表
+  createdAt: string
+  updatedAt: string
+}
+
+// ---------- 操作日志 ----------
+export interface SysLog {
+  id: number
+  userId: number
+  username: string
+  module: string                  // 操作模块
+  action: string                  // 操作类型（新增/修改/删除/查询/登录/导出）
+  description: string             // 操作描述
+  method: string                  // 请求方法
+  requestUrl: string              // 请求 URL
+  requestParams: string           // 请求参数（JSON 字符串）
+  ip: string
+  duration: number                // 耗时(ms)
+  status: 'success' | 'fail'
+  errorMsg: string                // 错误信息
+  createdAt: string
+}
+
+// ---------- 日志查询参数 ----------
+export interface LogQueryParams {
+  username?: string
+  module?: string
+  action?: string
+  status?: 'success' | 'fail'
+  startTime?: string
+  endTime?: string
+  page?: number
+  pageSize?: number
 }

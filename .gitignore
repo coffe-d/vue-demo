@@ -1,6 +1,1 @@
 node_modules
-dist
-.claude
-*.local
-.DS_Store
-Thumbs.db

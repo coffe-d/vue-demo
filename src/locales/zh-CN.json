@@ -1,14 +1,12 @@
 {
   "menu": {
-    "dashboard": "仪表盘",
-    "todo": "待办事项",
-    "form": "复杂表单",
-    "table": "数据表格",
-    "timeline": "时间线",
-    "shortcuts": "快捷键",
-    "store": "状态管理",
-    "composables": "组合式函数",
-    "productManage": "基础信息"
+    "dashboard": "主页",
+    "system": "系统管理",
+    "menuManage": "菜单管理",
+    "dictManage": "字典管理",
+    "userManage": "用户管理",
+    "roleManage": "角色管理",
+    "logManage": "日志管理"
   },
   "login": {
     "title": "登录系统",
@@ -31,6 +29,7 @@
     "reset": "重置",
     "add": "新增",
     "edit": "编辑",
+    "detail": "详情",
     "submit": "提交",
     "back": "返回",
     "yes": "是",
@@ -39,7 +38,15 @@
     "success": "操作成功",
     "error": "操作失败",
     "pleaseSelect": "请选择",
-    "noData": "暂无数据"
+    "noData": "暂无数据",
+    "batchDelete": "批量删除",
+    "export": "导出",
+    "actions": "操作",
+    "status": "状态",
+    "remark": "备注",
+    "createTime": "创建时间",
+    "updateTime": "更新时间",
+    "deleteConfirm": "确定要删除该记录吗？"
   },
   "header": {
     "title": "Vue3 后台管理系统",
@@ -49,7 +56,7 @@
     "logout": "退出登录"
   },
   "dashboard": {
-    "title": "仪表盘",
+    "title": "主页",
     "welcome": "欢迎回来",
     "totalUsers": "用户总数",
     "totalOrders": "订单总数",
@@ -59,113 +66,61 @@
     "recentOrders": "近期订单",
     "systemStatus": "系统状态"
   },
-  "todo": {
-    "title": "待办事项",
-    "addPlaceholder": "输入新待办...",
-    "description": "描述（可选）",
-    "priority": "优先级",
-    "status": "状态",
-    "all": "全部",
-    "low": "低",
-    "medium": "中",
-    "high": "高",
-    "todo_status": "待处理",
-    "inProgress": "进行中",
-    "done": "已完成",
-    "clearCompleted": "清空已完成",
-    "total": "总计",
-    "undone": "未完成"
-  },
-  "form": {
-    "title": "复杂表单",
-    "basicInfo": "基本信息",
-    "dynamicFields": "动态字段",
-    "cascaderDemo": "级联选择",
-    "customValidator": "自定义校验",
-    "nestedForm": "嵌套表单",
-    "username": "用户名",
-    "email": "邮箱",
-    "phone": "手机号",
-    "age": "年龄",
-    "province": "省份",
-    "city": "城市",
-    "district": "区县",
-    "addField": "添加字段",
-    "removeField": "移除",
-    "fieldLabel": "字段标签",
-    "fieldValue": "字段值",
-    "submitSuccess": "表单提交成功",
-    "formRules": {
-      "usernameRequired": "请输入用户名",
-      "usernameMin": "用户名至少 3 个字符",
-      "emailRequired": "请输入邮箱",
-      "emailInvalid": "请输入正确的邮箱格式",
-      "phoneRequired": "请输入手机号",
-      "phoneInvalid": "请输入正确的手机号",
-      "ageRequired": "请输入年龄",
-      "ageRange": "年龄需在 1-150 之间"
+  "system": {
+    "menu": {
+      "parentMenu": "上级菜单",
+      "menuName": "菜单名称",
+      "menuType": "菜单类型",
+      "menuIcon": "图标",
+      "routePath": "路由路径",
+      "componentPath": "组件路径",
+      "permission": "权限标识",
+      "sort": "排序",
+      "typeMenu": "菜单",
+      "typeButton": "按钮",
+      "rootMenu": "根目录（一级菜单）"
+    },
+    "dict": {
+      "dictName": "字典名称",
+      "dictCode": "字典编码",
+      "dictLabel": "字典项标签",
+      "dictValue": "字典项值",
+      "dictManage": "字典项管理",
+      "dictType": "字典类型"
+    },
+    "user": {
+      "username": "用户名",
+      "nickname": "昵称",
+      "email": "邮箱",
+      "phone": "手机号",
+      "role": "所属角色",
+      "lastLogin": "最后登录",
+      "password": "密码",
+      "confirmPassword": "确认密码"
+    },
+    "role": {
+      "roleName": "角色名称",
+      "roleCode": "角色编码",
+      "description": "角色描述",
+      "menuPermission": "菜单权限",
+      "assignPermission": "分配权限"
+    },
+    "log": {
+      "module": "操作模块",
+      "action": "操作类型",
+      "description": "操作描述",
+      "requestUrl": "请求URL",
+      "requestMethod": "请求方法",
+      "ip": "IP地址",
+      "duration": "耗时(ms)",
+      "errorMsg": "错误信息",
+      "create": "新增",
+      "update": "修改",
+      "delete": "删除",
+      "query": "查询",
+      "login": "登录",
+      "export": "导出"
     }
-  },
-  "table": {
-    "title": "数据表格",
-    "addRecord": "新增记录",
-    "batchDelete": "批量删除",
-    "exportData": "导出数据",
-    "name": "姓名",
-    "email": "邮箱",
-    "role": "角色",
-    "status": "状态",
-    "created": "创建时间",
-    "actions": "操作",
-    "editRecord": "编辑记录",
-    "deleteConfirm": "确定要删除该记录吗？",
-    "searchPlaceholder": "搜索姓名或邮箱..."
-  },
-  "timeline": {
-    "title": "时间线 & 步骤表单",
-    "approvalFlow": "审批流程演示",
-    "stepForm": "步骤表单",
-    "step1": "填写基本信息",
-    "step2": "填写详细资料",
-    "step3": "确认提交",
-    "previous": "上一步",
-    "next": "下一步",
-    "completed": "流程已完成",
-    "stepFormSubmit": "所有步骤已完成，提交成功！"
-  },
-  "shortcuts": {
-    "title": "快捷键演示",
-    "description": "以下快捷键已在全局注册，可在任意页面使用：",
-    "searchFile": "搜索文件",
-    "toggleTheme": "切换主题",
-    "toggleLang": "切换语言",
-    "focusSearch": "聚焦搜索框",
-    "openSettings": "打开设置",
-    "pressHere": "在此区域按下按键测试...",
-    "detectedKey": "检测到的按键组合",
-    "noShortcut": "无匹配快捷键",
-    "registeredShortcuts": "已注册的快捷键"
-  },
-  "storeDemo": {
-    "title": "状态管理 (Pinia)",
-    "setupStore": "Setup Store 风格 (todoStore)",
-    "optionsStore": "Options Store 风格 (userStore)",
-    "storeToRefs": "storeToRefs 响应式解构",
-    "subscribe": "$subscribe 监听变化",
-    "themeStore": "主题 Store",
-    "currentTheme": "当前主题",
-    "todoCount": "待办数量",
-    "userStatus": "用户状态"
-  },
-  "composables": {
-    "title": "组合式函数 (Composables)",
-    "debounceDemo": "useDebounce 防抖演示",
-    "localStorageDemo": "useLocalStorage 持久化演示",
-    "typeHint": "输入内容测试防抖效果（300ms）",
-    "realTimeValue": "实时值",
-    "debouncedValue": "防抖值",
-    "inputPersist": "输入一段文字，刷新页面后仍然保留：",
-    "savedValue": "已保存的值"
   },
   "ai": {
     "title": "AI 助手",
